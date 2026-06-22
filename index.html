@@ -108,6 +108,7 @@
 <a href="#etapa-17">Etapa 17 — CALCULANDO AREA DE MANGUEZAL PARA TODOS OS ANOS ANALIZADOS</a>
 <a href="#etapa-18">Etapa 18 — GERANDO GRAFICO TEMPORAL</a>
 <a href="#etapa-19">Etapa 19 — BAIXANDO GRAFICO</a></div><section class="step" id="etapa-1"></section>
+
   <div class="step-head">
     <h2 class="step-title">Etapa 1 — BIBLIOTECAS NECESSARIAS</h2>
     <button class="btn copy" data-target="code-1">Copiar código</button>
@@ -636,13 +637,13 @@ fig.savefig(                    # Salva a figura em alta resolução
 
 files.download(nome_arquivo)    # Baixa a imagem para o computador</code></pre></div>
 
-</section><section class="step" id="etapa-17">
+</section><section class="step" id="etapa-16">
   <div class="step-head">
     <h2 class="step-title">Etapa 16 — CALCULANDO AREA DE MANGUEZAL UTILIZANDO COMO BASE CMRI COM LIMIAR</h2>
-    <button class="btn copy" data-target="code-17">Copiar código</button>
+    <button class="btn copy" data-target="code-16">Copiar código</button>
   </div>
   <p class="note">Calcula a área classificada como manguezal em metros quadrados e hectares.</p>
-  <div class="codebox"><pre><code id="code-17">pixel_area = ee.Image.pixelArea()            # Cria uma imagem contendo a área de cada pixel em m²
+  <div class="codebox"><pre><code id="code-16">pixel_area = ee.Image.pixelArea()            # Cria uma imagem contendo a área de cada pixel em m²
 
 area_mangue = (
     pixel_area
@@ -674,13 +675,13 @@ print(
     f&#x27;Área classificada como manguezal: {area_ha:,.2f} ha&#x27;
 )                                            # Exibe a área em hectares</code></pre></div>
 
-</section><section class="step" id="etapa-18">
+</section><section class="step" id="etapa-17">
   <div class="step-head">
     <h2 class="step-title">Etapa 17 — CALCULANDO AREA DE MANGUEZAL PARA TODOS OS ANOS ANALIZADOS</h2>
-    <button class="btn copy" data-target="code-18">Copiar código</button>
+    <button class="btn copy" data-target="code-17">Copiar código</button>
   </div>
   <p class="note">Calcula a área de manguezal para todos os anos analisados.</p>
-  <div class="codebox"><pre><code id="code-18">limiar = 0.95                               # Define o valor limiar utilizado para discriminar o manguezal
+  <div class="codebox"><pre><code id="code-17">limiar = 0.95                               # Define o valor limiar utilizado para discriminar o manguezal
 
 anos = [2020, 2021, 2022, 2023, 2024, 2025] # Define os anos analisados
 
@@ -728,13 +729,13 @@ for year in anos:                           # Percorre cada ano da série tempor
     print(
         f&#x27;{year}: {area_ha:.2f} ha&#x27;
     )                                       # Exibe a área estimada para cada ano</code></pre></div>
-</section><section class="step" id="etapa-19">
+</section><section class="step" id="etapa-18">
   <div class="step-head">
     <h2 class="step-title">Etapa 18 — GERANDO GRAFICO TEMPORAL</h2>
-    <button class="btn copy" data-target="code-19">Copiar código</button>
+    <button class="btn copy" data-target="code-18">Copiar código</button>
   </div>
   <p class="note">Gera o gráfico da evolução temporal da área de manguezal.</p>
-  <div class="codebox"><pre><code id="code-19">fig, ax = plt.subplots(
+  <div class="codebox"><pre><code id="code-18">fig, ax = plt.subplots(
     figsize=(8,5)
 )                                           # Cria a figura e os eixos
 
@@ -759,13 +760,13 @@ ax.set_title(
 ax.grid()                                   # Adiciona uma grade
 
 plt.show()                                  # Exibe a figura</code></pre></div>
-</section><section class="step" id="etapa-20">
+</section><section class="step" id="etapa-19">
   <div class="step-head">
     <h2 class="step-title">Etapa 19 — BAIXANDO GRAFICO</h2>
-    <button class="btn copy" data-target="code-20">Copiar código</button>
+    <button class="btn copy" data-target="code-19">Copiar código</button>
   </div>
   <p class="note">Salva e baixa o gráfico gerado em alta resolução.</p>
-  <div class="codebox"><pre><code id="code-20">from google.colab import files              # Permite baixar arquivos do ambiente Colab
+  <div class="codebox"><pre><code id="code-19">from google.colab import files              # Permite baixar arquivos do ambiente Colab
 
 nome_arquivo = (
     &#x27;Evolucao_Area_Manguezal_2020_2025.png&#x27;
