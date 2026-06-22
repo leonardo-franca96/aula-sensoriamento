@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roteiro Colab — Sentinel-2, NDVI, NDWI e CMRI</title>
+<style>
+:root{--bg:#f5f7fb;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--accent:#0f766e;--accent2:#115e59;--code:#0b1020;--border:#e5e7eb;}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55} header{background:linear-gradient(135deg,#064e3b,#0f766e);color:#fff;padding:44px 20px} .wrap{max-width:1040px;margin:0 auto} h1{font-size:clamp(1.8rem,4vw,3rem);margin:0 0 10px} .subtitle{font-size:1.05rem;opacity:.95;max-width:850px}.toolbar{position:sticky;top:0;background:rgba(245,247,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:5}.toolbar .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 20px}.progress{font-size:.95rem;color:var(--muted)} .btn{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700;transition:.15s}.btn:hover{background:var(--accent2);transform:translateY(-1px)} .btn.secondary{background:#e8f5f2;color:#064e3b}.btn.secondary:hover{background:#d1eee8} main{padding:28px 20px 56px}.step{background:var(--card);border:1px solid var(--border);border-radius:18px;margin:0 0 22px;overflow:hidden;box-shadow:0 8px 26px rgba(15,23,42,.06)}.step-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}.step-title{margin:0;font-size:1.15rem}.note{margin:0;color:var(--muted);font-size:.94rem;padding:0 20px 16px}.codebox{position:relative;background:var(--code)}pre{margin:0;padding:22px;overflow:auto;color:#e5e7eb;font-size:.92rem;line-height:1.45;tab-size:4}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}.copied{background:#16a34a!important}.toplink{color:#fff;text-decoration:underline}.index{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:22px 0}.index a{display:block;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}.index a:hover{border-color:#0f766e;color:#064e3b}.footer{color:var(--muted);font-size:.9rem;text-align:center;margin-top:30px}@media print{.toolbar,.btn{display:none}.step{break-inside:avoid}body{background:#fff}pre{white-space:pre-wrap}}
+</style>
+</head>
+<body>
+  <div style="text-align:center; margin-bottom:40px;">
+
+    <h1 style="color:#0b3d91;">
+        Roteiro de Aula Prática em Google Colab
+    </h1>
+
+    <h2 style="color:#00695c;">
+        Disciplina: Manguezais do Semiárido
+    </h2>
+
+    <h3 style="font-weight:normal;">
+        Processamento e análise de imagens Sentinel-2 utilizando os índices NDVI, NDWI e CMRI
+    </h3>
+
+    <p style="font-size:18px; margin-top:30px;">
+        <strong>Doutorando</strong><br>
+        Leonardo de França Almeida
+    </p>
+
+</div><div style="
+    background-color:#f8f9fa;
+    border-left:6px solid #00695c;
+    padding:25px;
+    margin-top:30px;
+    margin-bottom:40px;
+    border-radius:8px;
+">
+
+    <h2 style="color:#00695c;">
+        Como utilizar este roteiro
+    </h2>
+
+    <p style="text-align:justify; line-height:1.8;">
+        O material está organizado em etapas correspondentes às células do
+        <strong>Google Colab</strong>. Cada seção apresenta o código necessário
+        para a execução da atividade e contém um botão
+        <strong>"Copiar código"</strong>, permitindo que os comandos sejam
+        facilmente transferidos para o ambiente de programação.
+    </p>
+
+    <h3 style="color:#0b3d91;">
+        Procedimento recomendado
+    </h3>
+
+    <ol style="line-height:2;">
+        <li>Clique em <strong>"Copiar código"</strong>;</li>
+
+        <li>
+            Cole o conteúdo em uma célula do
+            <strong>Google Colab</strong>;
+        </li>
+
+        <li>Execute a célula;</li>
+
+        <li>Verifique os resultados obtidos;</li>
+
+        <li>Avance para a próxima etapa.</li>
+    </ol>
+
+    <p style="
+        background:#e8f5e9;
+        padding:15px;
+        border-radius:6px;
+        margin-top:20px;
+        text-align:justify;
+    ">
+        <strong>Importante:</strong> recomenda-se executar as etapas na ordem em
+        que são apresentadas, pois alguns procedimentos dependem dos resultados
+        gerados nas etapas anteriores.
+    </p>
+
+</div>
+<header id="topo"><div class="wrap">Ir para o índice das etapas</a></p></div></header>
+<div class="toolbar"><div class="wrap"><span class="progress">Use uma etapa por célula no Google Colab.</span><button class="btn secondary" onclick="copyAll()">Copiar tudo</button></div></div>
+<main class="wrap"><h2 id="indice">Índice das etapas</h2><div class="index"><a href="#etapa-1">Etapa 1 — BIBLIOTECAS NECESSARIAS</a>
+<a href="#etapa-2">Etapa 2 — AUTENTICANDO AO EARTH ENGINNER</a>
+<a href="#etapa-3">Etapa 3 — SELECIONANDO AREA DE INTERESSE</a>
+<a href="#etapa-4">Etapa 4 — MOSTRA A AREA DE INTERESSE SELECIONADA</a>
+<a href="#etapa-5">Etapa 5 — REMOVER NUVENS</a>
+<a href="#etapa-6">Etapa 6 — CALCULAR INDICES (NDVI, NDWI, CMRI)</a>
+<a href="#etapa-7">Etapa 7 — CARREGA AS IMANGENS DO SENTINEL</a>
+<a href="#etapa-8">Etapa 8 — VERIFICA QUANTAS IMAGENS DO SENTINEL ESTAO DISPONIVEIS PARA CADA ANO PARA GERAR AS COMPOSICOES</a>
+<a href="#etapa-9.A">Etapa 9.A — GERAR COMPOSICAO RGB DE ACORDO COM O ANO ESCOLHIDO</a>
+<a href="#etapa-9.B">Etapa 9.B — Baixando imagem domo TIFF</a>
+<a href="#etapa-10.A">Etapa 10.A — Gerar e visualizar o Índice de Vegetação por Diferença Normalizada (NDVI) para o ano</a>
+<a href="#etapa-10.B">Etapa 10.B — Baixando imagem domo TIFF</a>
+<a href="#etapa-11.A">Etapa 11.A — Gerar e visualizar o Índice de Água por Diferença Normalizada (NDWI) para o ano</a>
+<a href="#etapa-11.B">Etapa 11.B — Baixando imagem domo TIFF</a>
+<a href="#etapa-12.A">Etapa 12.A — Gerar e visualizar o Combined Mangrove Recognition Index (CMRI)PARA O ANO ESCOLHIDO,</a>
+<a href="#etapa-12.B">Etapa 12.B — Baixando imagem domo TIFF</a>
+<a href="#etapa-13.A">Etapa 13.A — Gerar e visualizar o Combined Mangrove Recognition Index (CMRI) com base no limiar</a>
+<a href="#etapa-13.B">Etapa 13.B — Baixando imagem domo TIFF</a>
+<a href="#etapa-14">Etapa 14 — MOSTRAR SERIE TEMPORAL</a>
+<a href="#etapa-14">Etapa 15 — BAIXANDO IMAGEM GERADA</a>
+<a href="#etapa-15">Etapa 16 — CALCULANDO AREA DE MANGUEZAL UTILIZANDO COMO BASE CMRI COM LIMIAR</a>
+<a href="#etapa-16">Etapa 17 — CALCULANDO AREA DE MANGUEZAL PARA TODOS OS ANOS ANALIZADOS</a>
+<a href="#etapa-17">Etapa 18 — GERANDO GRAFICO TEMPORAL</a>
+<a href="#etapa-18">Etapa 19 — BAIXANDO GRAFICO</a></div><section class="step" id="etapa-1"></section>
+
+  <div class="step-head">
+    <h2 class="step-title">Etapa 1 — BIBLIOTECAS NECESSARIAS</h2>
+    <button class="btn copy" data-target="code-1">Copiar código</button>
+  </div>
+  <p class="note">Instala e importa as bibliotecas usadas no processamento, visualização e download das imagens.</p>
+  <div class="codebox"><pre><code id="code-1">!pip install geemap earthengine-api -q  # Instala as bibliotecas necessárias
+
+import ee                               # Google Earth Engine
+import geemap                           # Mapas interativos
+import pandas as pd                     # Manipulação de tabelas
+import matplotlib.pyplot as plt         # Gráficos e imagens
+import matplotlib.patches as mpatches   # Legendas personalizadas
+import requests                         # Download de arquivos e imagens da web
+from PIL import Image                   # Manipulação de imagens
+from io import BytesIO                  # Leitura de imagens em memória</code></pre></div>
+</section><section class="step" id="etapa-2">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 2 — AUTENTICANDO AO EARTH ENGINNER</h2>
+    <button class="btn copy" data-target="code-2">Copiar código</button>
+  </div>
+  <p class="note">Realiza a autenticação e inicialização do Google Earth Engine no ambiente Colab.</p>
+  <div class="codebox"><pre><code id="code-2">ee.Authenticate()                                            # Autentica o acesso ao Earth Engine
+
+ee.Initialize(
+    project=&#x27;teste2026-leo&#x27;,                                 # Projeto do Earth Engine
+    opt_url=&#x27;https://earthengine-highvolume.googleapis.com&#x27;  # API de alto desempenho
+)</code></pre></div>
+</section><section class="step" id="etapa-3">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 3 — SELECIONANDO AREA DE INTERESSE</h2>
+    <button class="btn copy" data-target="code-3">Copiar código</button>
+  </div>
+  <p class="note">Abre um mapa interativo para que a área de interesse seja desenhada manualmente.</p>
+  <div class="codebox"><pre><code id="code-3">Map = geemap.Map(                 # Cria um mapa interativo
+    basemap=&#x27;SATELLITE&#x27;,          # Fundo em imagem de satélite
+    center=[-5.1, -36.7],         # Centro inicial do mapa
+    zoom=13                       # Nível de aproximação
+)
+
+Map                               # Exibe o mapa</code></pre></div>
+</section><section class="step" id="etapa-4">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 4 — MOSTRA A AREA DE INTERESSE SELECIONADA</h2>
+    <button class="btn copy" data-target="code-4">Copiar código</button>
+  </div>
+  <p class="note">Captura a geometria desenhada, adiciona ao mapa e centraliza a visualização na área de interesse.</p>
+  <div class="codebox"><pre><code id="code-4">roi = Map.draw_last_feature.geometry()      # Obtém a área de interesse desenhada pelo usuário
+
+Map.addLayer(roi, {&#x27;color&#x27;: &#x27;red&#x27;}, &#x27;Área de Interesse&#x27;)  # Adiciona a área ao mapa
+
+Map.centerObject(roi, 13)                   # Centraliza o mapa na área de interesse</code></pre></div>
+</section><section class="step" id="etapa-5">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 5 — REMOVER NUVENS</h2>
+    <button class="btn copy" data-target="code-5">Copiar código</button>
+  </div>
+  <p class="note">Define uma função para mascarar nuvens, sombras e pixels indesejados do Sentinel-2.</p>
+  <div class="codebox"><pre><code id="code-5">def mask_sentinel2(image):                # Função para remover nuvens do Sentinel-2
+
+    scl = image.select(&#x27;SCL&#x27;)             # Seleciona a banda de classificação da cena
+
+    mask = (
+        scl.neq(3)                        # Sombra de nuvem
+        .And(scl.neq(8))                  # Nuvem média
+        .And(scl.neq(9))                  # Nuvem alta
+        .And(scl.neq(10))                 # Cirrus
+        .And(scl.neq(11))                 # Neve/gelo
+    )
+
+    return (
+        image
+        .updateMask(mask)                 # Aplica a máscara
+        .divide(10000)                    # Converte para reflectância
+        .copyProperties(image, [&#x27;system:time_start&#x27;])  # Mantém a data da imagem
+    )</code></pre></div>
+</section><section class="step" id="etapa-6">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 6 — CALCULAR INDICES (NDVI, NDWI, CMRI)</h2>
+    <button class="btn copy" data-target="code-6">Copiar código</button>
+  </div>
+  <p class="note">Cria as bandas NDVI, NDWI e CMRI e adiciona esses índices à imagem.</p>
+  <div class="codebox"><pre><code id="code-6">def add_indices(img):                           # Calcula os índices espectrais
+
+    ndvi = img.normalizedDifference([&#x27;B8&#x27;,&#x27;B4&#x27;]).rename(&#x27;NDVI&#x27;)  # NDVI
+    ndwi = img.normalizedDifference([&#x27;B3&#x27;,&#x27;B8&#x27;]).rename(&#x27;NDWI&#x27;)  # NDWI
+    cmri = ndvi.subtract(ndwi).rename(&#x27;CMRI&#x27;)                    # CMRI
+
+    return img.addBands([ndvi, ndwi, cmri])    # Adiciona os índices à imagem</code></pre></div>
+</section><section class="step" id="etapa-7">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 7 — CARREGA AS IMANGENS DO SENTINEL</h2>
+    <button class="btn copy" data-target="code-7">Copiar código</button>
+  </div>
+  <p class="note">Monta a coleção Sentinel-2 filtrada pela área, percentual de nuvens e índices calculados.</p>
+  <div class="codebox"><pre><code id="code-7">sen2_class = (
+    ee.ImageCollection(&#x27;COPERNICUS/S2_SR_HARMONIZED&#x27;) # Coleção Sentinel-2
+    .filterBounds(roi)                                # Filtra pela área de interesse
+    .filter(ee.Filter.lt(&#x27;CLOUDY_PIXEL_PERCENTAGE&#x27;, 30)) # Filtra imagens com menos de 30% de nuvens
+    .map(mask_sentinel2)                              # Remove nuvens e sombras
+    .map(add_indices)                                 # Calcula NDVI, NDWI e CMRI
+)</code></pre></div>
+</section><section class="step" id="etapa-8">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 8 — VERIFICA QUANTAS IMAGENS DO SENTINEL ESTAO DISPONIVEIS PARA CADA ANO PARA GERAR AS COMPOSICOES</h2>
+    <button class="btn copy" data-target="code-8">Copiar código</button>
+  </div>
+  <p class="note">Conta quantas imagens estão disponíveis em cada ano dentro do período analisado.</p>
+  <div class="codebox"><pre><code id="code-8">for year in [2020, 2021, 2022, 2023, 2024, 2025]:  # Percorre os anos analisados
+
+    start = ee.Date.fromYMD(year, 8, 1)            # Data inicial
+    end = ee.Date.fromYMD(year, 10, 30)            # Data final
+
+    count = (
+        sen2_class
+        .filterDate(start, end)                    # Filtra pelo período
+        .size()                                    # Conta as imagens
+        .getInfo()
+    )
+
+    print(f&#x27;{year}: {count} imagens&#x27;)              # Exibe a quantidade de imagens</code></pre></div>
+</section><section class="step" id="etapa-9.A">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 9.A — GERAR COMPOSICAO RGB DE ACORDO COM O ANO ESCOLHIDO</h2>
+    <button class="btn copy" data-target="code-9.A">Copiar código</button>
+  </div>
+  <p class="note">Gera uma composição RGB do ano escolhido e exibe a imagem no Colab.</p>
+  <div class="codebox"><pre><code id="code-9.A">year = 2023                                    # Define o ano de interesse
+
+start = ee.Date.fromYMD(year, 8, 1)            # Define a data inicial (01 de agosto)
+end = ee.Date.fromYMD(year, 10, 30)            # Define a data final (30 de outubro)
+
+img_2023 = (
+    sen2_class
+    .filterDate(start, end)                    # Filtra as imagens do período
+    .median()                                  # Gera uma composição mediana
+    .clip(roi)                                 # Recorta a imagem para a área de interesse
+)
+
+url = img_2023.getThumbURL({                   # Gera uma miniatura da imagem
+    &#x27;bands&#x27;: [&#x27;B4&#x27;, &#x27;B3&#x27;, &#x27;B2&#x27;],               # Define a composição RGB (Vermelho, Verde e Azul)
+    &#x27;min&#x27;: 0.02,                               # Valor mínimo de reflectância
+    &#x27;max&#x27;: 0.30,                               # Valor máximo de reflectância
+    &#x27;gamma&#x27;: 1.2,                              # Ajuste de brilho da imagem
+    &#x27;region&#x27;: roi,                             # Define a região a ser exibida
+    &#x27;dimensions&#x27;: 1024                         # Define a resolução da imagem
+})
+
+response = requests.get(url)                   # Faz o download da imagem
+
+rgb_2023 = Image.open(                         # Abre a imagem em memória
+    BytesIO(response.content)
+)
+
+plt.figure(figsize=(8, 8))                     # Define o tamanho da figura
+plt.imshow(rgb_2023)                           # Exibe a imagem RGB
+plt.title(&#x27;RGB Sentinel-2 — 2023&#x27;)             # Define o título da figura
+plt.axis(&#x27;off&#x27;)                                # Remove os eixos
+plt.show()                                     # Mostra a figura</code></pre></div>
+</section><section class="step" id="etapa-9.B">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 9.B — BAIXANDO IMAGEM COMO TIFF</h2>
+    <button class="btn copy" data-target="code-9.B">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa a composição RGB em formato TIFF.</p>
+  <div class="codebox"><pre><code id="code-9.B">geemap.ee_export_image(                           # Exporta a imagem do Google Earth Engine
+    img_2023.select(['B4', 'B3', 'B2']),          # Seleciona as bandas RGB (Vermelho, Verde e Azul)
+    filename=f'RGB_Sentinel_{year}.tif',          # Define o nome do arquivo de saída
+    scale=10,                                     # Define a resolução espacial de 10 m
+    region=roi,                                   # Limita a exportação à área de interesse
+    crs='EPSG:31984'                              # Define o sistema de coordenadas SIRGAS 2000 / UTM zona 24S
+)</code></pre></div>
+
+
+
+</section><section class="step" id="etapa-10.A">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 10.A — Gerar e visualizar o Índice de Vegetação por Diferença Normalizada (NDVI) para o ano</h2>
+    <button class="btn copy" data-target="code-10.A">Copiar código</button>
+  </div>
+  <p class="note">Gera e visualiza o mapa de NDVI para o ano selecionado.</p>
+  <div class="codebox"><pre><code id="code-10.A">year = 2023                                    # Define o ano de interesse
+
+start = ee.Date.fromYMD(year, 8, 1)            # Define a data inicial (01 de agosto)
+end = ee.Date.fromYMD(year, 10, 30)            # Define a data final (30 de outubro)
+
+img_2023 = (
+    sen2_class
+    .filterDate(start, end)                    # Filtra as imagens do período
+    .median()                                  # Gera uma composição mediana
+    .clip(roi)                                 # Recorta a imagem para a área de interesse
+)
+
+# Seleciona a banda NDVI da imagem
+ndvi_2023 = img_2023.select(&#x27;NDVI&#x27;)
+
+# Gera uma miniatura da imagem NDVI
+url = ndvi_2023.getThumbURL({
+    &#x27;min&#x27;: -0.2,                               # Valor mínimo do NDVI
+    &#x27;max&#x27;: 0.8,                                # Valor máximo do NDVI
+    &#x27;palette&#x27;: [
+        &#x27;8c510a&#x27;,                              # Marrom (baixa vegetação/solo)
+        &#x27;ffffbf&#x27;,                              # Amarelo claro (transição)
+        &#x27;006837&#x27;                               # Verde escuro (vegetação densa)
+    ],
+    &#x27;region&#x27;: roi,                             # Define a área de interesse
+    &#x27;dimensions&#x27;: 1024                         # Define a resolução da imagem
+})
+
+response = requests.get(url)                   # Faz o download da imagem
+
+ndvi_img = Image.open(
+    BytesIO(response.content)                  # Abre a imagem em memória
+)
+
+plt.figure(figsize=(8,8))                      # Define o tamanho da figura
+plt.imshow(ndvi_img)                           # Exibe a imagem NDVI
+plt.title(&#x27;NDVI Sentinel-2 — 2023&#x27;)            # Define o título da figura
+plt.axis(&#x27;off&#x27;)                                # Remove os eixos da imagem
+
+plt.show()                                     # Mostra a figura</code></pre></div>
+</section><section class="step" id="etapa-10.B">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 10.B — BAIXANDO IMAGEM COMO TIFF</h2>
+    <button class="btn copy" data-target="code-10.B">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa a composição RGB em formato TIFF.</p>
+  <div class="codebox"><pre><code id="code-10.B">geemap.ee_export_image(                               # Exporta a imagem do índice NDVI
+    ndvi_2023,                                        # Imagem contendo os valores do NDVI
+    filename=f'NDVI_{year}.tif',                      # Nome do arquivo de saída
+    scale=10,                                         # Resolução espacial de 10 m
+    region=roi,                                       # Área de interesse para o recorte da imagem
+    crs='EPSG:31984'                                  # Sistema de coordenadas SIRGAS 2000 / UTM 24S
+)</code></pre></div>
+
+</section><section class="step" id="etapa-11.A">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 11.A — Gerar e visualizar o Índice de Água por Diferença Normalizada (NDWI) para o ano</h2>
+    <button class="btn copy" data-target="code-11.A">Copiar código</button>
+  </div>
+  <p class="note">Gera e visualiza o mapa de NDWI para o ano selecionado.</p>
+  <div class="codebox"><pre><code id="code-11.A">year = 2023                                    # Define o ano de interesse
+
+start = ee.Date.fromYMD(year, 8, 1)            # Define a data inicial (01 de agosto)
+end = ee.Date.fromYMD(year, 10, 30)            # Define a data final (30 de outubro)
+
+img_2023 = (
+    sen2_class
+    .filterDate(start, end)                    # Filtra as imagens do período
+    .median()                                  # Gera uma composição mediana
+    .clip(roi)                                 # Recorta a imagem para a área de interesse
+)
+
+# Seleciona a banda NDWI da imagem
+ndwi_2023 = img_2023.select(&#x27;NDWI&#x27;)
+
+# Gera uma miniatura da imagem NDWI
+url = ndwi_2023.getThumbURL({
+    &#x27;min&#x27;: -0.5,                               # Valor mínimo do NDWI
+    &#x27;max&#x27;: 0.5,                                # Valor máximo do NDWI
+    &#x27;palette&#x27;: [
+        &#x27;8c510a&#x27;,                              # Marrom (solo exposto e vegetação)
+        &#x27;ffffbf&#x27;,                              # Amarelo claro (transição)
+        &#x27;01665e&#x27;                               # Azul-esverdeado (água)
+    ],
+    &#x27;region&#x27;: roi,                             # Define a área de interesse
+    &#x27;dimensions&#x27;: 1024                         # Define a resolução da imagem
+})
+
+response = requests.get(url)                   # Faz o download da imagem
+
+ndwi_img = Image.open(
+    BytesIO(response.content)                  # Abre a imagem em memória
+)
+
+plt.figure(figsize=(8,8))                      # Define o tamanho da figura
+plt.imshow(ndwi_img)                           # Exibe a imagem NDWI
+plt.title(&#x27;NDWI Sentinel-2 — 2023&#x27;)            # Define o título da figura
+plt.axis(&#x27;off&#x27;)                                # Remove os eixos
+
+plt.show()                                     # Mostra a figura</code></pre></div>
+
+</section><section class="step" id="etapa-11.B">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 11.B — BAIXANDO IMAGEM COMO TIFF</h2>
+    <button class="btn copy" data-target="code-11.B">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa a composição RGB em formato TIFF.</p>
+  <div class="codebox"><pre><code id="code-11.B">geemap.ee_export_image(                           # Exporta a imagem do índice NDWI
+    ndwi_2023,                                    # Imagem correspondente ao NDWI
+    filename=f'NDWI_{year}.tif',                  # Define o nome do arquivo de saída com o ano analisado
+    scale=10,                                     # Define a resolução espacial de 10 m
+    region=roi,                                   # Define a área de interesse para o recorte
+    crs='EPSG:31984'                              # Define o sistema de coordenadas SIRGAS 2000 / UTM 24S
+)</code></pre></div>
+
+
+
+</section><section class="step" id="etapa-12.A">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 12.A — Gerar e visualizar o Combined Mangrove Recognition Index (CMRI)PARA O ANO ESCOLHIDO,</h2>
+    <button class="btn copy" data-target="code-12.A">Copiar código</button>
+  </div>
+  <p class="note">Gera e visualiza o mapa do índice CMRI para o ano selecionado.</p>
+  <div class="codebox"><pre><code id="code-12.A">year = 2023                                    # Define o ano de interesse
+
+start = ee.Date.fromYMD(year, 8, 1)            # Define a data inicial (01 de agosto)
+end = ee.Date.fromYMD(year, 10, 30)            # Define a data final (30 de outubro)
+
+img_2023 = (
+    sen2_class
+    .filterDate(start, end)                    # Filtra as imagens do período
+    .median()                                  # Gera uma composição mediana
+    .clip(roi)                                 # Recorta a imagem para a área de interesse
+)
+
+# Seleciona a banda CMRI da imagem
+cmri_2023 = img_2023.select(&#x27;CMRI&#x27;)
+
+# Gera uma miniatura da imagem CMRI
+url = cmri_2023.getThumbURL({
+    &#x27;min&#x27;: -1,                                 # Valor mínimo do CMRI
+    &#x27;max&#x27;: 1,                                  # Valor máximo do CMRI
+    &#x27;palette&#x27;: [
+        &#x27;313695&#x27;,                              # Azul escuro (água)
+        &#x27;74add1&#x27;,                              # Azul claro (áreas úmidas)
+        &#x27;ffffff&#x27;,                              # Branco (transição)
+        &#x27;a6d96a&#x27;,                              # Verde claro (vegetação)
+        &#x27;006837&#x27;                               # Verde escuro (manguezal/vegetação densa)
+    ],
+    &#x27;region&#x27;: roi,                             # Define a área de interesse
+    &#x27;dimensions&#x27;: 1024                         # Define a resolução da imagem
+})
+
+response = requests.get(url)                   # Faz o download da imagem
+
+cmri_img = Image.open(
+    BytesIO(response.content)                  # Abre a imagem em memória
+)
+
+plt.figure(figsize=(8,8))                      # Define o tamanho da figura
+plt.imshow(cmri_img)                           # Exibe a imagem CMRI
+plt.title(&#x27;CMRI Sentinel-2 — 2023&#x27;)            # Define o título da figura
+plt.axis(&#x27;off&#x27;)                                # Remove os eixos
+
+plt.show()                                     # Mostra a figura</code></pre></div>
+
+</section><section class="step" id="etapa-12.B">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 12.B — BAIXANDO IMAGEM COMO TIFF</h2>
+    <button class="btn copy" data-target="code-12.B">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa a composição RGB em formato TIFF.</p>
+  <div class="codebox"><pre><code id="code-12.B">geemap.ee_export_image(                           # Exporta a imagem do índice CMRI
+    cmri_2023,                                    # Imagem correspondente ao índice CMRI
+    filename=f'CMRI_{year}.tif',                  # Define o nome do arquivo de saída com o ano analisado
+    scale=10,                                     # Define a resolução espacial de 10 m
+    region=roi,                                   # Define a área de interesse para o recorte da imagem
+    crs='EPSG:31984'                              # Define o sistema de coordenadas SIRGAS 2000 / UTM 24S
+)</code></pre></div>
+
+
+</section><section class="step" id="etapa-13.A">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 13.A — Gerar e visualizar o Combined Mangrove Recognition Index (CMRI) com base no limiar</h2>
+    <button class="btn copy" data-target="code-13.A">Copiar código</button>
+  </div>
+  <p class="note">Aplica um limiar ao CMRI para separar possíveis áreas de manguezal das demais classes.</p>
+  <div class="codebox"><pre><code id="code-13.A">limiar = 0.15                                # Define o valor limiar para discriminação do manguezal
+
+cmri_bin = cmri_2023.gt(limiar)              # Cria uma imagem binária onde:
+                                              # 1 = CMRI &gt; limiar (possível manguezal)
+                                              # 0 = CMRI ≤ limiar (demais classes)
+
+# Gera uma miniatura da imagem binária
+url = cmri_bin.getThumbURL({
+    &#x27;min&#x27;: 0,                                 # Valor mínimo da classificação
+    &#x27;max&#x27;: 1,                                 # Valor máximo da classificação
+    &#x27;palette&#x27;: [
+        &#x27;ffffff&#x27;,                             # Branco = não manguezal
+        &#x27;006837&#x27;                              # Verde escuro = manguezal
+    ],
+    &#x27;region&#x27;: roi,                            # Define a área de interesse
+    &#x27;dimensions&#x27;: 1024                        # Define a resolução da imagem
+})
+
+response = requests.get(url)                  # Faz o download da imagem
+
+cmri_img = Image.open(
+    BytesIO(response.content)                 # Abre a imagem em memória
+)
+
+plt.figure(figsize=(8,8))                     # Define o tamanho da figura
+plt.imshow(cmri_img)                          # Exibe a classificação binária
+plt.title(
+    f&#x27;CMRI &gt; {limiar} — 2023&#x27;                 # Define o título da figura
+)                              
+
+plt.axis(&#x27;off&#x27;)                               # Remove os eixos
+
+plt.show()                                    # Mostra a figura</code></pre></div>
+
+
+</section><section class="step" id="etapa-13.B">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 13.B — BAIXANDO IMAGEM COMO TIFF</h2>
+    <button class="btn copy" data-target="code-13.B">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa a composição RGB em formato TIFF.</p>
+  <div class="codebox"><pre><code id="code-13.B">geemap.ee_export_image(                           # Exporta a imagem binária do CMRI
+    cmri_bin,                                     # Imagem correspondente à classificação binária do CMRI
+    filename=f'CMRI_{year}.tif',                  # Define o nome do arquivo de saída com o ano analisado
+    scale=10,                                     # Define a resolução espacial de 10 m
+    region=roi,                                   # Define a área de interesse para o recorte da imagem
+    crs='EPSG:31984'                              # Define o sistema de coordenadas SIRGAS 2000 / UTM 24S
+)</code></pre></div>
+
+
+
+</section><section class="step" id="etapa-14">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 14 — MOSTRAR SERIE TEMPORAL</h2>
+    <button class="btn copy" data-target="code-14">Copiar código</button>
+  </div>
+  <p class="note">Gera uma grade comparativa da evolução temporal do NDVI entre 2020 e 2025.</p>
+  <div class="codebox"><pre><code id="code-14">years = [2020, 2021, 2022, 2023, 2024, 2025]     # Define os anos analisados
+
+fig, axes = plt.subplots(2, 3, figsize=(14, 8)) # Cria uma figura com 2 linhas e 3 colunas
+axes = axes.flatten()                            # Converte a matriz de eixos em um vetor
+
+for i, year in enumerate(years):                 # Percorre os anos da série temporal
+
+    start = ee.Date.fromYMD(year, 8, 1)          # Define a data inicial
+    end = ee.Date.fromYMD(year, 10, 30)          # Define a data final
+
+    img = (                                      # Gera a composição mediana do período
+        sen2_class
+        .filterDate(start, end)                  # Filtra as imagens do período
+        .median()                                # Gera a composição mediana
+        .clip(roi)                               # Recorta a imagem para a área de interesse
+    )
+
+    ndvi = img.select(&#x27;NDVI&#x27;)                    # Seleciona a banda NDVI
+
+    url = ndvi.getThumbURL({                     # Gera uma miniatura da imagem NDVI
+        &#x27;min&#x27;: -0.2,                             # Valor mínimo do NDVI
+        &#x27;max&#x27;: 0.8,                              # Valor máximo do NDVI
+        &#x27;palette&#x27;: [
+            &#x27;8c510a&#x27;,                            # Marrom: solo exposto ou baixo NDVI
+            &#x27;ffffbf&#x27;,                            # Amarelo claro: transição
+            &#x27;006837&#x27;                             # Verde escuro: vegetação densa
+        ],
+        &#x27;region&#x27;: roi,                           # Define a área de interesse
+        &#x27;dimensions&#x27;: 512                        # Define a resolução da imagem
+    })
+
+    response = requests.get(url)                 # Faz o download da imagem
+
+    img_plot = Image.open(
+        BytesIO(response.content)
+    )                                            # Abre a imagem em memória
+
+    axes[i].imshow(img_plot)                     # Exibe a imagem
+    axes[i].set_title(f&#x27;NDVI {year}&#x27;)            # Define o título do subplot
+    axes[i].axis(&#x27;off&#x27;)                          # Remove os eixos
+
+legend_elements = [                              # Cria os elementos da legenda
+
+    mpatches.Patch(
+        color=&#x27;#8c510a&#x27;,
+        label=&#x27;Baixo NDVI / Solo exposto&#x27;
+    ),
+
+    mpatches.Patch(
+        color=&#x27;#ffffbf&#x27;,
+        label=&#x27;Transição&#x27;
+    ),
+
+    mpatches.Patch(
+        color=&#x27;#006837&#x27;,
+        label=&#x27;Vegetação densa&#x27;
+    ),
+]
+
+fig.legend(                                      # Adiciona uma legenda única
+    handles=legend_elements,
+    loc=&#x27;lower center&#x27;,
+    ncol=3,
+    fontsize=9
+)
+
+plt.suptitle(                                    # Define o título geral da figura
+    &#x27;Evolução do NDVI Sentinel-2 (2020–2025)&#x27;,
+    fontsize=16
+)
+
+plt.tight_layout(                                # Ajusta os espaçamentos da figura
+    rect=[0, 0.08, 1, 1]
+)
+
+plt.show()                                       # Exibe a figura
+
+nome_arquivo = &#x27;NDVI_Sentinel_2020_2025.png&#x27;     # Define o nome do arquivo de saída
+
+fig.savefig(                                     # Salva a figura em alta resolução
+    nome_arquivo,
+    dpi=300,
+    bbox_inches=&#x27;tight&#x27;
+)
+
+print(                                           # Exibe o nome do arquivo salvo
+    f&#x27;Imagem salva como: {nome_arquivo}&#x27;
+)</code></pre></div>
+</section><section class="step" id="etapa-15">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 15 — BAIXANDO IMAGENS GERADA</h2>
+    <button class="btn copy" data-target="code-15">Copiar código</button>
+  </div>
+  <p class="note">Baixa a imagem gerada para o computador a partir do ambiente Colab.</p>
+  <div class="codebox"><pre><code id="code-15">from google.colab import files  # Permite baixar arquivos do ambiente Colab
+
+fig.savefig(                    # Salva a figura em alta resolução
+    nome_arquivo,
+    dpi=300,
+    bbox_inches=&#x27;tight&#x27;
+)
+
+files.download(nome_arquivo)    # Baixa a imagem para o computador</code></pre></div>
+
+</section><section class="step" id="etapa-17">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 16 — CALCULANDO AREA DE MANGUEZAL UTILIZANDO COMO BASE CMRI COM LIMIAR</h2>
+    <button class="btn copy" data-target="code-17">Copiar código</button>
+  </div>
+  <p class="note">Calcula a área classificada como manguezal em metros quadrados e hectares.</p>
+  <div class="codebox"><pre><code id="code-17">pixel_area = ee.Image.pixelArea()            # Cria uma imagem contendo a área de cada pixel em m²
+
+area_mangue = (
+    pixel_area
+    .updateMask(cmri_bin)                    # Mantém apenas os pixels classificados como manguezal
+)
+
+area_total = area_mangue.reduceRegion(
+    reducer=ee.Reducer.sum(),                # Soma a área de todos os pixels classificados
+    geometry=roi,                            # Limita o cálculo à área de interesse
+    scale=10,                                # Utiliza a resolução espacial do Sentinel-2 (10 m)
+    maxPixels=1e13                           # Permite processar grandes quantidades de pixels
+)
+
+area_m2 = (
+    area_total
+    .get(&#x27;area&#x27;)                             # Obtém a área total em metros quadrados
+    .getInfo()
+)
+
+area_ha = (
+    area_m2 / 10000                          # Converte a área de m² para hectares
+)
+
+print(
+    f&#x27;Área classificada como manguezal: {area_m2:,.2f} m²&#x27;
+)                                            # Exibe a área em metros quadrados
+
+print(
+    f&#x27;Área classificada como manguezal: {area_ha:,.2f} ha&#x27;
+)                                            # Exibe a área em hectares</code></pre></div>
+
+</section><section class="step" id="etapa-18">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 17 — CALCULANDO AREA DE MANGUEZAL PARA TODOS OS ANOS ANALIZADOS</h2>
+    <button class="btn copy" data-target="code-18">Copiar código</button>
+  </div>
+  <p class="note">Calcula a área de manguezal para todos os anos analisados.</p>
+  <div class="codebox"><pre><code id="code-18">limiar = 0.95                               # Define o valor limiar utilizado para discriminar o manguezal
+
+anos = [2020, 2021, 2022, 2023, 2024, 2025] # Define os anos analisados
+
+areas_ha = []                               # Cria uma lista para armazenar as áreas em hectares
+
+for year in anos:                           # Percorre cada ano da série temporal
+
+    start = ee.Date.fromYMD(year, 8, 1)     # Define a data inicial
+    end = ee.Date.fromYMD(year, 10, 30)     # Define a data final
+
+    img = (
+        sen2_class
+        .filterDate(start, end)             # Filtra as imagens do período
+        .median()                           # Gera a composição mediana
+        .clip(roi)                          # Recorta a imagem para a área de interesse
+    )
+
+    cmri = img.select(&#x27;CMRI&#x27;)               # Seleciona a banda correspondente ao índice CMRI
+
+    cmri_bin = (
+        cmri.gt(limiar)                     # Classifica como manguezal os pixels com CMRI superior ao limiar
+    )
+
+    area = (
+        ee.Image.pixelArea()                # Cria uma imagem contendo a área de cada pixel em m²
+        .updateMask(cmri_bin)               # Mantém apenas os pixels classificados como manguezal
+        .rename(&#x27;area&#x27;)                     # Renomeia a banda para &quot;area&quot;
+        .reduceRegion(
+            reducer=ee.Reducer.sum(),       # Soma a área dos pixels classificados
+            geometry=roi,                   # Limita o cálculo à área de interesse
+            scale=10,                       # Utiliza a resolução espacial do Sentinel-2 (10 m)
+            maxPixels=1e13                  # Define o número máximo de pixels processados
+        )
+    )
+
+    area_ha = (
+        area
+        .get(&#x27;area&#x27;)                        # Obtém a área total em metros quadrados
+        .getInfo()
+        / 10000                             # Converte a área para hectares
+    )
+
+    areas_ha.append(area_ha)                # Armazena a área correspondente ao ano analisado
+
+    print(
+        f&#x27;{year}: {area_ha:.2f} ha&#x27;
+    )                                       # Exibe a área estimada para cada ano</code></pre></div>
+</section><section class="step" id="etapa-19">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 18 — GERANDO GRAFICO TEMPORAL</h2>
+    <button class="btn copy" data-target="code-19">Copiar código</button>
+  </div>
+  <p class="note">Gera o gráfico da evolução temporal da área de manguezal.</p>
+  <div class="codebox"><pre><code id="code-19">fig, ax = plt.subplots(
+    figsize=(8,5)
+)                                           # Cria a figura e os eixos
+
+ax.plot(
+    anos,
+    areas_ha,
+    marker=&#x27;o&#x27;
+)                                           # Plota a área de manguezal ao longo dos anos
+
+ax.set_xlabel(
+    &#x27;Ano&#x27;
+)                                           # Define o rótulo do eixo x
+
+ax.set_ylabel(
+    &#x27;Área de manguezal (ha)&#x27;
+)                                           # Define o rótulo do eixo y
+
+ax.set_title(
+    &#x27;Evolução temporal da área de manguezal&#x27;
+)                                           # Define o título do gráfico
+
+ax.grid()                                   # Adiciona uma grade
+
+plt.show()                                  # Exibe a figura</code></pre></div>
+</section><section class="step" id="etapa-20">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 19 — BAIXANDO GRAFICO</h2>
+    <button class="btn copy" data-target="code-20">Copiar código</button>
+  </div>
+  <p class="note">Salva e baixa o gráfico gerado em alta resolução.</p>
+  <div class="codebox"><pre><code id="code-20">from google.colab import files              # Permite baixar arquivos do ambiente Colab
+
+nome_arquivo = (
+    &#x27;Evolucao_Area_Manguezal_2020_2025.png&#x27;
+)                                           # Define o nome do arquivo
+
+fig.savefig(                                # Salva a figura em alta resolução
+    nome_arquivo,
+    dpi=300,
+    bbox_inches=&#x27;tight&#x27;
+)
+
+files.download(
+    nome_arquivo
+)                                           # Baixa o arquivo para o computador</code></pre></div>
+</section><p class="footer">Documento HTML gerado para facilitar cópia e execução sequencial das células no Google Colab.</p></main>
+<script>
+document.querySelectorAll('.copy').forEach(button=>{
+  button.addEventListener('click', async ()=>{
+    const id=button.getAttribute('data-target');
+    const text=document.getElementById(id).innerText;
+    try{
+      await navigator.clipboard.writeText(text);
+      const old=button.textContent;
+      button.textContent='Copiado!';
+      button.classList.add('copied');
+      setTimeout(()=>{button.textContent=old;button.classList.remove('copied')},1400);
+    }catch(e){
+      const range=document.createRange();
+      range.selectNodeContents(document.getElementById(id));
+      const sel=window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      button.textContent='Copiado!';
+      button.classList.add('copied');
+    }
+  })
+});
+function copyAll(){
+  const all=[...document.querySelectorAll('pre code')].map(c=>c.innerText).join('\n\n# ---------------------------------------------\n\n');
+  navigator.clipboard.writeText(all);
+}
+</script>
+</body></html>
