@@ -1,94 +1,81 @@
+
 <!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Roteiro Colab — Sentinel-2, NDVI, NDWI e CMRI</title>
+<title>Roteiro Colab — Aula 2: Série Temporal Interativa Sentinel-2</title>
 <style>
 :root{--bg:#f5f7fb;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--accent:#0f766e;--accent2:#115e59;--code:#0b1020;--border:#e5e7eb;}
-*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55} header{background:linear-gradient(135deg,#064e3b,#0f766e);color:#fff;padding:44px 20px} .wrap{max-width:1040px;margin:0 auto} h1{font-size:clamp(1.8rem,4vw,3rem);margin:0 0 10px} .subtitle{font-size:1.05rem;opacity:.95;max-width:850px}.toolbar{position:sticky;top:0;background:rgba(245,247,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:5}.toolbar .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 20px}.progress{font-size:.95rem;color:var(--muted)} .btn{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700;transition:.15s}.btn:hover{background:var(--accent2);transform:translateY(-1px)} .btn.secondary{background:#e8f5f2;color:#064e3b}.btn.secondary:hover{background:#d1eee8} main{padding:28px 20px 56px}.step{background:var(--card);border:1px solid var(--border);border-radius:18px;margin:0 0 22px;overflow:hidden;box-shadow:0 8px 26px rgba(15,23,42,.06)}.step-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}.step-title{margin:0;font-size:1.15rem}.note{margin:0;color:var(--muted);font-size:.94rem;padding:0 20px 16px}.codebox{position:relative;background:var(--code)}pre{margin:0;padding:22px;overflow:auto;color:#e5e7eb;font-size:.92rem;line-height:1.45;tab-size:4}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}.copied{background:#16a34a!important}.toplink{color:#fff;text-decoration:underline}.index{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:22px 0}.index a{display:block;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}.index a:hover{border-color:#0f766e;color:#064e3b}.footer{color:var(--muted);font-size:.9rem;text-align:center;margin-top:30px}@media print{.toolbar,.btn{display:none}.step{break-inside:avoid}body{background:#fff}pre{white-space:pre-wrap}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+.cover{text-align:center;background:#fff;padding:42px 20px 28px;border-bottom:1px solid var(--border)}
+.cover h1{color:#0b3d91;font-size:clamp(1.8rem,4vw,3rem);margin:0 0 12px}
+.cover h2{color:#00695c;margin:6px 0}
+.cover h3{font-weight:normal;max-width:900px;margin:14px auto;color:#374151}
+.cover p{font-size:18px;margin:24px 0 0}
+.wrap{max-width:1040px;margin:0 auto}
+.intro{background-color:#f8f9fa;border-left:6px solid #00695c;padding:25px;margin:30px auto 40px;border-radius:8px;max-width:1040px}
+.intro h2{color:#00695c;margin-top:0}
+.intro h3{color:#0b3d91}
+.intro p{text-align:justify;line-height:1.8}
+.intro ol{line-height:2}
+.alert{background:#e8f5e9;padding:15px;border-radius:6px;margin-top:20px;text-align:justify}
+header{background:linear-gradient(135deg,#064e3b,#0f766e);color:#fff;padding:28px 20px}
+header h2{margin:0 0 6px}
+header p{margin:0;opacity:.92}
+.toolbar{position:sticky;top:0;background:rgba(245,247,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:5}
+.toolbar .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 20px}
+.progress{font-size:.95rem;color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700;transition:.15s}
+.btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn.secondary{background:#e8f5f2;color:#064e3b}
+.btn.secondary:hover{background:#d1eee8}
+main{padding:28px 20px 56px}
+.index{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:22px 0}
+.index a{display:block;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}
+.index a:hover{border-color:#0f766e;color:#064e3b}
+.step{background:var(--card);border:1px solid var(--border);border-radius:18px;margin:0 0 22px;overflow:hidden;box-shadow:0 8px 26px rgba(15,23,42,.06)}
+.step-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.step-title{margin:0;font-size:1.15rem}
+.note{margin:0;color:var(--muted);font-size:.94rem;padding:0 20px 16px}
+.codebox{position:relative;background:var(--code)}
+pre{margin:0;padding:22px;overflow:auto;color:#e5e7eb;font-size:.92rem;line-height:1.45;tab-size:4}
+code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
+.copied{background:#16a34a!important}
+.footer{color:var(--muted);font-size:.9rem;text-align:center;margin-top:30px}
+@media print{.toolbar,.btn{display:none}.step{break-inside:avoid}body{background:#fff}pre{white-space:pre-wrap}}
 </style>
 </head>
 <body>
-  <div style="text-align:center; margin-bottom:40px;">
+  <div class="cover">
+    <h1>Roteiro de Aula Prática em Google Colab - AULA 01</h1>
+    <h2>Disciplina: Manguezais do Semiárido</h2>
+    <h3>Série temporal interativa com imagens Sentinel-2 utilizando RGB, NDVI, NDWI, CMRI e CMRI com limiar</h3>
+    <p><strong>Doutorando</strong><br>Leonardo de França Almeida</p>
+    <p><strong>Prof. Dr.</strong><br>Rogério Taygra Vasconcelos Fernandes</p>
+  </div>
 
-    <h1 style="color:#0b3d91;">
-        Roteiro de Aula Prática em Google Colab
-    </h1>
-
-    <h2 style="color:#00695c;">
-        Disciplina: Manguezais do Semiárido
-    </h2>
-
-    <h3 style="font-weight:normal;">
-        Processamento e análise de imagens Sentinel-2 utilizando os índices NDVI, NDWI e CMRI
-    </h3>
-
-    <p style="font-size:18px; margin-top:30px;">
-        <strong>Doutorando</strong><br>
-        Leonardo de França Almeida
-    </p>
-  <p style="font-size:18px; margin-top:30px;">
-            <strong>Prof. Dr</strong><br>
-        Rogerio Taygra Vasconcelos Fernandes
-    </p>
-
-
-</div><div style="
-    background-color:#f8f9fa;
-    border-left:6px solid #00695c;
-    padding:25px;
-    margin-top:30px;
-    margin-bottom:40px;
-    border-radius:8px;
-">
-
-    <h2 style="color:#00695c;">
-        Como utilizar este roteiro
-    </h2>
-
-    <p style="text-align:justify; line-height:1.8;">
-        O material está organizado em etapas correspondentes às células do
-        <strong>Google Colab</strong>. Cada seção apresenta o código necessário
-        para a execução da atividade e contém um botão
-        <strong>"Copiar código"</strong>, permitindo que os comandos sejam
-        facilmente transferidos para o ambiente de programação.
-    </p>
-
-    <h3 style="color:#0b3d91;">
-        Procedimento recomendado
-    </h3>
-
-    <ol style="line-height:2;">
-        <li>Clique em <strong>"Copiar código"</strong>;</li>
-
-        <li>
-            Cole o conteúdo em uma célula do
-            <strong>Google Colab</strong>;
-        </li>
-
-        <li>Execute a célula;</li>
-
-        <li>Verifique os resultados obtidos;</li>
-
-        <li>Avance para a próxima etapa.</li>
+  <section class="intro">
+    <h2>Como utilizar este roteiro</h2>
+    <p>O material está organizado em etapas correspondentes às células do <strong>Google Colab</strong>. Cada seção apresenta o código necessário para executar a atividade e contém um botão <strong>“Copiar código”</strong>, permitindo transferir os comandos diretamente para o ambiente de programação.</p>
+    <h3>Procedimento recomendado</h3>
+    <ol>
+      <li>Clique em <strong>“Copiar código”</strong>;</li>
+      <li>Cole o conteúdo em uma célula do <strong>Google Colab</strong>;</li>
+      <li>Execute a célula;</li>
+      <li>Verifique os resultados obtidos;</li>
+      <li>Avance para a próxima etapa.</li>
     </ol>
+    <p class="alert"><strong>Importante:</strong> recomenda-se executar as etapas na ordem apresentada. As etapas finais dependem da área de interesse, da coleção Sentinel-2 processada e da figura gerada pela interface interativa.</p>
+  </section>
 
-    <p style="
-        background:#e8f5e9;
-        padding:15px;
-        border-radius:6px;
-        margin-top:20px;
-        text-align:justify;
-    ">
-        <strong>Importante:</strong> recomenda-se executar as etapas na ordem em
-        que são apresentadas, pois alguns procedimentos dependem dos resultados
-        gerados nas etapas anteriores.
-    </p>
+  <header id="topo"><div class="wrap"><h2>Aula 1 — Fluxo básico de processamento de imagens Sentinel-2 no Google Earth Engine utilizando o Google Colab</h2><p>Use o índice abaixo para navegar entre as etapas da atividade.</p></div></header>
+  <div class="toolbar"><div class="wrap"><span class="progress">Use uma etapa por célula no Google Colab.</span><button class="btn secondary" onclick="copyAll()">Copiar tudo</button></div></div>
+  <main class="wrap">
 
-</div>
-<header id="topo"><div class="wrap">Ir para o índice das etapas</a></p></div></header>
-<div class="toolbar"><div class="wrap"><span class="progress">Use uma etapa por célula no Google Colab.</span><button class="btn secondary" onclick="copyAll()">Copiar tudo</button></div></div>
+
+
 <main class="wrap"><h2 id="indice">Índice das etapas</h2><div class="index"><a href="#etapa-1">Etapa 1 — BIBLIOTECAS NECESSARIAS</a>
 <a href="#etapa-2">Etapa 2 — AUTENTICANDO AO EARTH ENGINNER</a>
 <a href="#etapa-3">Etapa 3 — SELECIONANDO AREA DE INTERESSE</a>
@@ -786,6 +773,7 @@ fig.savefig(                                # Salva a figura em alta resolução
 files.download(
     nome_arquivo
 )                                           # Baixa o arquivo para o computador</code></pre></div>
+
 </section><p class="footer">Documento HTML gerado para facilitar cópia e execução sequencial das células no Google Colab.</p></main>
 <script>
 document.querySelectorAll('.copy').forEach(button=>{
@@ -814,4 +802,125 @@ function copyAll(){
   navigator.clipboard.writeText(all);
 }
 </script>
+<!-- ==========================================================
+     NAVEGAÇÃO ENTRE AULAS
+=========================================================== -->
+
+<section style="
+    margin-top:60px;
+    margin-bottom:30px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:40px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    text-align:center;
+">
+
+    <div style="
+        width:80px;
+        height:80px;
+        margin:auto;
+        border-radius:50%;
+        background:linear-gradient(135deg,#0f766e,#064e3b);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:40px;
+        color:white;
+        margin-bottom:20px;
+    ">
+        ✓
+    </div>
+
+    <h2 style="
+        color:#064e3b;
+        margin-bottom:10px;
+        font-size:32px;
+    ">
+        Aula 1 concluída!
+    </h2>
+
+    <p style="
+        font-size:18px;
+        color:#6b7280;
+        max-width:750px;
+        margin:auto;
+        line-height:1.8;
+    ">
+        Parabéns! Você concluiu toda a primeira aula.
+        Agora você já conhece o fluxo básico de processamento de imagens
+        Sentinel-2 no Google Earth Engine utilizando o Google Colab.
+
+        Na próxima aula iremos automatizar todo esse processo,
+        construindo uma interface gráfica interativa capaz de gerar
+        séries temporais de RGB, NDVI, NDWI e CMRI com apenas alguns
+        cliques.
+    </p>
+
+    <div style="
+        margin-top:40px;
+        display:flex;
+        justify-content:center;
+        gap:20px;
+        flex-wrap:wrap;
+    ">
+
+        <a href="#topo" style="text-decoration:none;">
+
+            <button style="
+                padding:16px 34px;
+                border:none;
+                border-radius:12px;
+                background:#f3f4f6;
+                color:#374151;
+                font-size:17px;
+                font-weight:600;
+                cursor:pointer;
+                transition:.25s;
+            "
+            onmouseover="
+                this.style.background='#e5e7eb';
+                this.style.transform='translateY(-2px)';
+            "
+            onmouseout="
+                this.style.background='#f3f4f6';
+                this.style.transform='translateY(0)';
+            ">
+                ↑ Voltar ao início
+            </button>
+
+        </a>
+
+        <a href="aula-02.html"
+           style="text-decoration:none;">
+
+            <button style="
+                padding:16px 38px;
+                border:none;
+                border-radius:12px;
+                background:linear-gradient(135deg,#0f766e,#064e3b);
+                color:white;
+                font-size:18px;
+                font-weight:bold;
+                cursor:pointer;
+                transition:.25s;
+                box-shadow:0 10px 25px rgba(15,118,110,.35);
+            "
+            onmouseover="
+                this.style.transform='translateY(-3px)';
+                this.style.boxShadow='0 16px 35px rgba(15,118,110,.45)';
+            "
+            onmouseout="
+                this.style.transform='translateY(0)';
+                this.style.boxShadow='0 10px 25px rgba(15,118,110,.35)';
+            ">
+                Próxima Aula →
+            </button>
+
+        </a>
+
+    </div>
+
+</section>
 </body></html>
