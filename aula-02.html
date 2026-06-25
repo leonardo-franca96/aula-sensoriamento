@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roteiro Colab — Aula 2: Série Temporal Interativa Sentinel-2</title>
+<style>
+:root{--bg:#f5f7fb;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--accent:#0f766e;--accent2:#115e59;--code:#0b1020;--border:#e5e7eb;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+.cover{text-align:center;background:#fff;padding:42px 20px 28px;border-bottom:1px solid var(--border)}
+.cover h1{color:#0b3d91;font-size:clamp(1.8rem,4vw,3rem);margin:0 0 12px}
+.cover h2{color:#00695c;margin:6px 0}
+.cover h3{font-weight:normal;max-width:900px;margin:14px auto;color:#374151}
+.cover p{font-size:18px;margin:24px 0 0}
+.wrap{max-width:1040px;margin:0 auto}
+.intro{background-color:#f8f9fa;border-left:6px solid #00695c;padding:25px;margin:30px auto 40px;border-radius:8px;max-width:1040px}
+.intro h2{color:#00695c;margin-top:0}
+.intro h3{color:#0b3d91}
+.intro p{text-align:justify;line-height:1.8}
+.intro ol{line-height:2}
+.alert{background:#e8f5e9;padding:15px;border-radius:6px;margin-top:20px;text-align:justify}
+header{background:linear-gradient(135deg,#064e3b,#0f766e);color:#fff;padding:28px 20px}
+header h2{margin:0 0 6px}
+header p{margin:0;opacity:.92}
+.toolbar{position:sticky;top:0;background:rgba(245,247,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:5}
+.toolbar .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 20px}
+.progress{font-size:.95rem;color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700;transition:.15s}
+.btn:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn.secondary{background:#e8f5f2;color:#064e3b}
+.btn.secondary:hover{background:#d1eee8}
+main{padding:28px 20px 56px}
+.index{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:22px 0}
+.index a{display:block;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;text-decoration:none;color:var(--text)}
+.index a:hover{border-color:#0f766e;color:#064e3b}
+.step{background:var(--card);border:1px solid var(--border);border-radius:18px;margin:0 0 22px;overflow:hidden;box-shadow:0 8px 26px rgba(15,23,42,.06)}
+.step-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.step-title{margin:0;font-size:1.15rem}
+.note{margin:0;color:var(--muted);font-size:.94rem;padding:0 20px 16px}
+.codebox{position:relative;background:var(--code)}
+pre{margin:0;padding:22px;overflow:auto;color:#e5e7eb;font-size:.92rem;line-height:1.45;tab-size:4}
+code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
+.copied{background:#16a34a!important}
+.footer{color:var(--muted);font-size:.9rem;text-align:center;margin-top:30px}
+@media print{.toolbar,.btn{display:none}.step{break-inside:avoid}body{background:#fff}pre{white-space:pre-wrap}}
+</style>
+</head>
+<body>
+  <div class="cover">
+    <h1>Roteiro de Aula Prática em Google Colab - AULA 02</h1>
+    <h2>Disciplina: Manguezais do Semiárido</h2>
+    <h3>Série temporal interativa com imagens Sentinel-2 utilizando RGB, NDVI, NDWI, CMRI e CMRI com limiar</h3>
+    <p><strong>Doutorando</strong><br>Leonardo de França Almeida</p>
+    <p><strong>Prof. Dr.</strong><br>Rogério Taygra Vasconcelos Fernandes</p>
+  </div>
+
+  <section class="intro">
+    <h2>Como utilizar este roteiro</h2>
+    <p>O material está organizado em etapas correspondentes às células do <strong>Google Colab</strong>. Cada seção apresenta o código necessário para executar a atividade e contém um botão <strong>“Copiar código”</strong>, permitindo transferir os comandos diretamente para o ambiente de programação.</p>
+    <h3>Procedimento recomendado</h3>
+    <ol>
+      <li>Clique em <strong>“Copiar código”</strong>;</li>
+      <li>Cole o conteúdo em uma célula do <strong>Google Colab</strong>;</li>
+      <li>Execute a célula;</li>
+      <li>Verifique os resultados obtidos;</li>
+      <li>Avance para a próxima etapa.</li>
+    </ol>
+    <p class="alert"><strong>Importante:</strong> recomenda-se executar as etapas na ordem apresentada. As etapas finais dependem da área de interesse, da coleção Sentinel-2 processada e da figura gerada pela interface interativa.</p>
+  </section>
+
+  <header id="topo"><div class="wrap"><h2>Aula 2 — Série Temporal Interativa</h2><p>Use o índice abaixo para navegar entre as etapas da atividade.</p></div></header>
+  <div class="toolbar"><div class="wrap"><span class="progress">Use uma etapa por célula no Google Colab.</span><button class="btn secondary" onclick="copyAll()">Copiar tudo</button></div></div>
+  <main class="wrap">
+    <h2 id="indice">Índice das etapas</h2>
+    <div class="index"><a href="#etapa-1">Etapa 1 — BIBLIOTECAS NECESSÁRIAS</a>
+<a href="#etapa-2">Etapa 2 — AUTENTICANDO AO EARTH ENGINE</a>
+<a href="#etapa-3">Etapa 3 — SELECIONANDO A ÁREA DE INTERESSE</a>
+<a href="#etapa-4">Etapa 4 — MOSTRAR A ÁREA DE INTERESSE SELECIONADA</a>
+<a href="#etapa-5">Etapa 5 — REMOVER NUVENS</a>
+<a href="#etapa-6">Etapa 6 — CALCULAR ÍNDICES — NDVI, NDWI E CMRI</a>
+<a href="#etapa-7">Etapa 7 — CARREGAR AS IMAGENS SENTINEL-2</a>
+<a href="#etapa-8">Etapa 8 — VERIFICAR IMAGENS DISPONÍVEIS POR ANO</a>
+<a href="#etapa-9">Etapa 9 — GERAR SÉRIE TEMPORAL DAS IMAGENS</a>
+<a href="#etapa-10">Etapa 10 — CRIAR MENU INTERATIVO PARA SELECIONAR O PRODUTO</a>
+<a href="#etapa-11">Etapa 11 — BAIXAR A IMAGEM GERADA</a></div>
+    <section class="step" id="etapa-1">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 1 — BIBLIOTECAS NECESSÁRIAS</h2>
+    <button class="btn copy" data-target="code-1">Copiar código</button>
+  </div>
+  <p class="note">Instala e importa as bibliotecas usadas para acessar o Earth Engine, gerar mapas, imagens, gráficos e widgets interativos no Colab.</p>
+  <div class="codebox"><pre><code id="code-1">!pip install geemap earthengine-api ipywidgets -q
+
+import ee                                  # Google Earth Engine
+import geemap                              # Ferramentas para Earth Engine
+import requests                            # Download de arquivos da web
+import matplotlib.pyplot as plt            # Exibição de gráficos e imagens
+import matplotlib.patches as mpatches      # Criação de legendas
+
+from PIL import Image                      # Manipulação de imagens
+from io import BytesIO                     # Leitura de dados em memória
+
+import ipywidgets as widgets               # Widgets interativos
+from IPython.display import display, clear_output  # Exibição dinâmica no Colab</code></pre></div>
+</section><section class="step" id="etapa-2">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 2 — AUTENTICANDO AO EARTH ENGINE</h2>
+    <button class="btn copy" data-target="code-2">Copiar código</button>
+  </div>
+  <p class="note">Realiza a autenticação e inicialização do Google Earth Engine no ambiente do Google Colab.</p>
+  <div class="codebox"><pre><code id="code-2">ee.Authenticate()
+
+ee.Initialize(
+    project=&#x27;teste2026-leo&#x27;,
+    opt_url=&#x27;https://earthengine-highvolume.googleapis.com&#x27;
+)</code></pre></div>
+</section><section class="step" id="etapa-3">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 3 — SELECIONANDO A ÁREA DE INTERESSE</h2>
+    <button class="btn copy" data-target="code-3">Copiar código</button>
+  </div>
+  <p class="note">Abre o mapa interativo em imagem de satélite para permitir o desenho manual da área de estudo.</p>
+  <div class="codebox"><pre><code id="code-3">Map = geemap.Map(
+    basemap=&#x27;SATELLITE&#x27;,
+    center=[-5.1,-36.7],
+    zoom=13
+)
+
+Map</code></pre></div>
+</section><section class="step" id="etapa-4">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 4 — MOSTRAR A ÁREA DE INTERESSE SELECIONADA</h2>
+    <button class="btn copy" data-target="code-4">Copiar código</button>
+  </div>
+  <p class="note">Captura a geometria desenhada, adiciona a ROI ao mapa e centraliza a visualização sobre a área selecionada.</p>
+  <div class="codebox"><pre><code id="code-4">roi = Map.draw_last_feature.geometry()
+
+Map.addLayer(
+    roi,
+    {&#x27;color&#x27;: &#x27;red&#x27;},
+    &#x27;ROI&#x27;
+)
+
+Map.centerObject(roi, 13)
+
+Map</code></pre></div>
+</section><section class="step" id="etapa-5">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 5 — REMOVER NUVENS</h2>
+    <button class="btn copy" data-target="code-5">Copiar código</button>
+  </div>
+  <p class="note">Define a função de máscara para remover sombras, nuvens médias, nuvens altas, cirrus e neve/gelo das imagens Sentinel-2.</p>
+  <div class="codebox"><pre><code id="code-5">def mask_sentinel2(image):
+
+    scl = image.select(&#x27;SCL&#x27;)              # Seleciona a banda de classificação
+
+    mask = (
+        scl.neq(3)      # Remove sombras de nuvens
+        .And(scl.neq(8))   # Remove nuvens médias
+        .And(scl.neq(9))   # Remove nuvens altas
+        .And(scl.neq(10))  # Remove nuvens cirrus
+        .And(scl.neq(11))  # Remove neve
+    )
+
+    return (
+        image
+        .updateMask(mask)                  # Aplica a máscara
+        .divide(10000)                     # Converte para reflectância
+        .copyProperties(image, [&#x27;system:time_start&#x27;])  # Mantém a data da imagem
+    )</code></pre></div>
+</section><section class="step" id="etapa-6">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 6 — CALCULAR ÍNDICES — NDVI, NDWI E CMRI</h2>
+    <button class="btn copy" data-target="code-6">Copiar código</button>
+  </div>
+  <p class="note">Cria uma função para calcular os índices espectrais NDVI, NDWI e CMRI e adicioná-los como bandas à imagem.</p>
+  <div class="codebox"><pre><code id="code-6"># Função para calcular os índices espectrais
+def add_indices(image):
+
+    ndvi = image.normalizedDifference([&#x27;B8&#x27;, &#x27;B4&#x27;]).rename(&#x27;NDVI&#x27;)   # Índice de vegetação
+
+    ndwi = image.normalizedDifference([&#x27;B3&#x27;, &#x27;B8&#x27;]).rename(&#x27;NDWI&#x27;)   # Índice de água
+
+    cmri = ndvi.subtract(ndwi).rename(&#x27;CMRI&#x27;)                        # Índice para manguezais
+
+    return image.addBands([
+        ndvi,
+        ndwi,
+        cmri
+    ])                                                               # Adiciona os índices à imagem</code></pre></div>
+</section><section class="step" id="etapa-7">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 7 — CARREGAR AS IMAGENS SENTINEL-2</h2>
+    <button class="btn copy" data-target="code-7">Copiar código</button>
+  </div>
+  <p class="note">Monta a coleção Sentinel-2 Surface Reflectance Harmonized filtrada pela ROI, percentual de nuvens e funções de pré-processamento.</p>
+  <div class="codebox"><pre><code id="code-7"># Cria a coleção Sentinel-2 já preparada para análise
+sen2_class = (
+    ee.ImageCollection(&#x27;COPERNICUS/S2_SR_HARMONIZED&#x27;)   # Coleção Sentinel-2
+    .filterBounds(roi)                                  # Filtra pela área de estudo
+    .filter(ee.Filter.lt(&#x27;CLOUDY_PIXEL_PERCENTAGE&#x27;, 30))# Mantém imagens com menos de 30% de nuvens
+    .map(mask_sentinel2)                                # Remove nuvens e sombras
+    .map(add_indices)                                   # Calcula NDVI, NDWI e CMRI
+)</code></pre></div>
+</section><section class="step" id="etapa-8">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 8 — VERIFICAR IMAGENS DISPONÍVEIS POR ANO</h2>
+    <button class="btn copy" data-target="code-8">Copiar código</button>
+  </div>
+  <p class="note">Conta quantas imagens Sentinel-2 estão disponíveis para cada ano no período de agosto a outubro.</p>
+  <div class="codebox"><pre><code id="code-8">years = [2020, 2021, 2022, 2023, 2024, 2025]
+for year in years:
+
+    start = ee.Date.fromYMD(year, 8, 1)
+    end = ee.Date.fromYMD(year, 10, 30)
+
+    count = (
+        sen2_class
+        .filterDate(start, end)
+        .size()
+        .getInfo()
+    )
+
+    print(f&#x27;{year}: {count} imagens&#x27;)</code></pre></div>
+</section><section class="step" id="etapa-9">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 9 — GERAR SÉRIE TEMPORAL DAS IMAGENS</h2>
+    <button class="btn copy" data-target="code-9">Copiar código</button>
+  </div>
+  <p class="note">Define uma função única para gerar painéis temporais 2x3 de RGB, NDVI, NDWI, CMRI contínuo ou CMRI com limiar.</p>
+  <div class="codebox"><pre><code id="code-9"># Função para gerar uma série temporal de imagens
+def plot_temporal_series(
+    collection,
+    roi,
+    years,
+    product_type=&#x27;RGB&#x27;,
+    title=None,
+    threshold_cmri=None
+):
+
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8))  # Cria painel 2x3
+    axes = axes.flatten()                            # Organiza os eixos em lista
+
+    for i, year in enumerate(years):                 # Percorre cada ano
+
+        start = ee.Date.fromYMD(year, 8, 1)          # Data inicial
+        end = ee.Date.fromYMD(year, 10, 30)          # Data final
+
+        img_year = (
+            collection
+            .filterDate(start, end)                  # Filtra imagens do período
+            .median()                                # Gera composição mediana
+            .clip(roi)                               # Recorta para a área de estudo
+        )
+
+        vis_params = {
+            &#x27;region&#x27;: roi,                           # Região da imagem
+            &#x27;dimensions&#x27;: 512                        # Tamanho da miniatura em pixels
+        }
+
+        if product_type == &#x27;RGB&#x27;:                    # Composição RGB
+            ee_img_to_plot = img_year
+            vis_params.update({
+                &#x27;bands&#x27;: [&#x27;B4&#x27;, &#x27;B3&#x27;, &#x27;B2&#x27;],
+                &#x27;min&#x27;: 0.02,
+                &#x27;max&#x27;: 0.30,
+                &#x27;gamma&#x27;: 1.2
+            })
+            plot_title = f&#x27;RGB {year}&#x27;
+
+        elif product_type == &#x27;NDVI&#x27;:                 # Índice de vegetação
+            ee_img_to_plot = img_year.select(&#x27;NDVI&#x27;)
+            vis_params.update({
+                &#x27;min&#x27;: -0.2,
+                &#x27;max&#x27;: 0.8,
+                &#x27;palette&#x27;: [&#x27;8c510a&#x27;, &#x27;ffffbf&#x27;, &#x27;006837&#x27;]
+            })
+            plot_title = f&#x27;NDVI {year}&#x27;
+
+        elif product_type == &#x27;NDWI&#x27;:                 # Índice de água
+            ee_img_to_plot = img_year.select(&#x27;NDWI&#x27;)
+            vis_params.update({
+                &#x27;min&#x27;: -0.5,
+                &#x27;max&#x27;: 0.5,
+                &#x27;palette&#x27;: [&#x27;8c510a&#x27;, &#x27;f7f7f7&#x27;, &#x27;01665e&#x27;]
+            })
+            plot_title = f&#x27;NDWI {year}&#x27;
+
+        elif product_type == &#x27;CMRI&#x27;:                 # Índice para manguezal
+            cmri = img_year.select(&#x27;CMRI&#x27;)
+
+            if threshold_cmri is not None:           # Aplica limiar no CMRI
+                cmri_mask = cmri.gt(threshold_cmri)
+                ee_img_to_plot = cmri_mask.updateMask(cmri_mask)
+                vis_params.update({
+                    &#x27;min&#x27;: 0,
+                    &#x27;max&#x27;: 1,
+                    &#x27;palette&#x27;: [&#x27;ffffff&#x27;, &#x27;006837&#x27;]
+                })
+                plot_title = f&#x27;CMRI &gt; {threshold_cmri:.2f} | {year}&#x27;
+
+            else:                                    # Exibe CMRI contínuo
+                ee_img_to_plot = cmri
+                vis_params.update({
+                    &#x27;min&#x27;: -1,
+                    &#x27;max&#x27;: 1,
+                    &#x27;palette&#x27;: [&#x27;313695&#x27;, &#x27;74add1&#x27;, &#x27;ffffff&#x27;, &#x27;a6d96a&#x27;, &#x27;006837&#x27;]
+                })
+                plot_title = f&#x27;CMRI {year}&#x27;
+
+        else:
+            raise ValueError(&#x27;Produto inválido.&#x27;)    # Erro para produto inexistente
+
+        url = ee_img_to_plot.getThumbURL(vis_params) # Gera link da imagem
+        response = requests.get(url)                 # Baixa a imagem
+        img_plot = Image.open(BytesIO(response.content)) # Abre a imagem
+
+        axes[i].imshow(img_plot)                     # Exibe no painel
+        axes[i].set_title(plot_title)                # Define título
+        axes[i].axis(&#x27;off&#x27;)                          # Remove eixos
+
+    if title is None:                                # Define título geral automático
+        if product_type == &#x27;CMRI&#x27; and threshold_cmri is not None:
+            title = f&#x27;Série Histórica CMRI com Limiar Sentinel-2 ({years[0]}–{years[-1]})&#x27;
+        else:
+            title = f&#x27;Evolução do {product_type} Sentinel-2 ({years[0]}–{years[-1]})&#x27;
+
+    plt.suptitle(title, fontsize=16)                 # Adiciona título geral
+
+    if product_type == &#x27;CMRI&#x27; and threshold_cmri is not None:
+        legend_elements = [
+            mpatches.Patch(
+                color=&#x27;#006837&#x27;,
+                label=f&#x27;Manguezal / Vegetação - CMRI &gt; {threshold_cmri:.2f}&#x27;
+            )
+        ]
+
+        fig.legend(handles=legend_elements, loc=&#x27;lower center&#x27;, ncol=1, fontsize=9)
+        plt.tight_layout(rect=[0, 0.08, 1, 1], h_pad=3)
+
+    else:
+        plt.tight_layout(rect=[0, 0.03, 1, 1], h_pad=3)
+
+    if threshold_cmri is not None:                   # Nome do arquivo com limiar
+        nome_arquivo = f&#x27;CMRI_limiar_{threshold_cmri:.2f}_{years[0]}_{years[-1]}.png&#x27;
+    else:                                            # Nome do arquivo sem limiar
+        nome_arquivo = f&#x27;{product_type}_{years[0]}_{years[-1]}.png&#x27;
+
+    print(&#x27;Imagem gerada com sucesso!&#x27;)
+    print(f&#x27;Nome sugerido para exportação: {nome_arquivo}&#x27;)
+
+    plt.show()                                       # Mostra a figura
+
+    return fig, nome_arquivo                         # Retorna figura e nome</code></pre></div>
+</section><section class="step" id="etapa-10">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 10 — CRIAR MENU INTERATIVO PARA SELECIONAR O PRODUTO</h2>
+    <button class="btn copy" data-target="code-10">Copiar código</button>
+  </div>
+  <p class="note">Cria a interface com menu suspenso, barra de limiar para CMRI e botão para gerar o painel temporal automaticamente.</p>
+  <div class="codebox"><pre><code id="code-10"># Cria um menu suspenso (Dropdown) para selecionar o produto
+produto_widget = widgets.Dropdown(
+    options=[
+        (&#x27;RGB&#x27;, &#x27;RGB&#x27;),
+        (&#x27;NDVI&#x27;, &#x27;NDVI&#x27;),
+        (&#x27;NDWI&#x27;, &#x27;NDWI&#x27;),
+        (&#x27;CMRI&#x27;, &#x27;CMRI&#x27;),
+        (&#x27;CMRI com limiar&#x27;, &#x27;CMRI_LIMIAR&#x27;)
+    ],
+    value=&#x27;RGB&#x27;,                     # Opção inicial
+    description=&#x27;Produto:&#x27;           # Texto exibido ao lado do menu
+)
+
+# Cria uma barra deslizante (Slider) para definir o limiar do CMRI
+limiar_widget = widgets.FloatSlider(
+    value=0.15,                      # Valor inicial
+    min=-1,                          # Valor mínimo
+    max=1,                           # Valor máximo
+    step=0.01,                       # Incremento
+    description=&#x27;Limiar:&#x27;,
+    continuous_update=False          # Atualiza somente ao soltar o controle
+)
+
+# Agrupa o slider em um container (VBox)
+limiar_box = widgets.VBox([limiar_widget])
+limiar_box.layout.display = &#x27;none&#x27;   # Oculta inicialmente
+
+# Exibe o slider apenas quando &quot;CMRI com limiar&quot; for selecionado
+def mudar_produto(change):
+
+    if change[&#x27;new&#x27;] == &#x27;CMRI_LIMIAR&#x27;:
+        limiar_box.layout.display = &#x27;flex&#x27;
+    else:
+        limiar_box.layout.display = &#x27;none&#x27;
+
+# Monitora alterações no menu suspenso
+produto_widget.observe(mudar_produto, names=&#x27;value&#x27;)
+
+# Cria um botão para gerar a imagem
+botao = widgets.Button(
+    description=&#x27;Gerar imagem&#x27;,
+    button_style=&#x27;success&#x27;,          # Cor verde
+    icon=&#x27;image&#x27;                     # Ícone
+)
+
+# Cria uma área para exibir os resultados
+saida = widgets.Output()
+
+# Função executada quando o botão é clicado
+def gerar_imagem(b):
+
+    global figura, nome_arquivo      # Armazena a figura e o nome do arquivo
+
+    with saida:
+
+        clear_output(wait=True)      # Limpa a saída anterior
+
+        # Gera o CMRI utilizando um limiar
+        if produto_widget.value == &#x27;CMRI_LIMIAR&#x27;:
+
+            figura, nome_arquivo = plot_temporal_series(
+                collection=sen2_class,
+                roi=roi,
+                years=years,
+                product_type=&#x27;CMRI&#x27;,
+                threshold_cmri=limiar_widget.value
+            )
+
+        # Gera RGB, NDVI, NDWI ou CMRI contínuo
+        else:
+
+            figura, nome_arquivo = plot_temporal_series(
+                collection=sen2_class,
+                roi=roi,
+                years=years,
+                product_type=produto_widget.value
+            )
+
+# Associa o clique do botão à função
+botao.on_click(gerar_imagem)
+
+# Exibe os componentes da interface
+display(produto_widget)   # Menu suspenso
+display(limiar_box)       # Barra deslizante
+display(botao)            # Botão
+display(saida)            # Área onde a imagem será exibida</code></pre></div>
+</section><section class="step" id="etapa-11">
+  <div class="step-head">
+    <h2 class="step-title">Etapa 11 — BAIXAR A IMAGEM GERADA</h2>
+    <button class="btn copy" data-target="code-11">Copiar código</button>
+  </div>
+  <p class="note">Salva a figura gerada pela interface e baixa o arquivo PNG para o computador.</p>
+  <div class="codebox"><pre><code id="code-11">from google.colab import files
+
+figura.savefig(
+    nome_arquivo,
+    dpi=300,
+    bbox_inches=&#x27;tight&#x27;
+)
+
+files.download(nome_arquivo)</code></pre></div>
+</section>
+    <p class="footer">Documento HTML gerado para facilitar cópia e execução sequencial das células no Google Colab.</p>
+  </main>
+<script>
+document.querySelectorAll('.copy').forEach(button=>{
+  button.addEventListener('click', async ()=>{
+    const id=button.getAttribute('data-target');
+    const text=document.getElementById(id).innerText;
+    try{
+      await navigator.clipboard.writeText(text);
+      const old=button.textContent;
+      button.textContent='Copiado!';
+      button.classList.add('copied');
+      setTimeout(()=>{button.textContent=old;button.classList.remove('copied')},1400);
+    }catch(e){
+      const range=document.createRange();
+      range.selectNodeContents(document.getElementById(id));
+      const sel=window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      button.textContent='Copiado!';
+      button.classList.add('copied');
+    }
+  })
+});
+function copyAll(){
+  const all=[...document.querySelectorAll('pre code')].map(c=>c.innerText).join('
+
+# ---------------------------------------------
+
+');
+  navigator.clipboard.writeText(all);
+}
+</script>
+<!-- ==========================================================
+     NAVEGAÇÃO ENTRE AULAS
+=========================================================== -->
+
+<section style="
+    margin-top:60px;
+    margin-bottom:30px;
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:40px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    text-align:center;
+">
+
+    <div style="
+        width:80px;
+        height:80px;
+        margin:auto;
+        border-radius:50%;
+        background:linear-gradient(135deg,#0f766e,#064e3b);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:40px;
+        color:white;
+        margin-bottom:20px;
+    ">
+        ✓
+    </div>
+
+    <h2 style="
+        color:#064e3b;
+        margin-bottom:10px;
+        font-size:32px;
+    ">
+        Aula 2 concluída!
+    </h2>
+
+    <p style="
+        font-size:18px;
+        color:#6b7280;
+        max-width:750px;
+        margin:auto;
+        line-height:1.8;
+    ">
+        Parabéns! Nesta aula você desenvolveu uma interface gráfica interativa
+    utilizando <strong>ipywidgets</strong>, tornando a análise de imagens
+    Sentinel-2 muito mais dinâmica e intuitiva.
+
+    Agora você é capaz de gerar séries temporais de RGB, NDVI, NDWI e CMRI,
+    aplicar limiares ao CMRI e visualizar os resultados por meio de uma
+    interface amigável, sem a necessidade de alterar o código a cada nova
+    análise.
+    </p>
+
+    <div style="
+        margin-top:40px;
+        display:flex;
+        justify-content:center;
+        gap:20px;
+        flex-wrap:wrap;
+    ">
+
+        <a href="#topo" style="text-decoration:none;">
+
+            <button style="
+                padding:16px 34px;
+                border:none;
+                border-radius:12px;
+                background:#f3f4f6;
+                color:#374151;
+                font-size:17px;
+                font-weight:600;
+                cursor:pointer;
+                transition:.25s;
+            "
+            onmouseover="
+                this.style.background='#e5e7eb';
+                this.style.transform='translateY(-2px)';
+            "
+            onmouseout="
+                this.style.background='#f3f4f6';
+                this.style.transform='translateY(0)';
+            ">
+                ↑ Voltar ao início
+            </button>
+
+        </a>
+
+        <a href="Aula-01.html"
+           style="text-decoration:none;">
+
+            <button style="
+                padding:16px 38px;
+                border:none;
+                border-radius:12px;
+                background:linear-gradient(135deg,#0f766e,#064e3b);
+                color:white;
+                font-size:18px;
+                font-weight:bold;
+                cursor:pointer;
+                transition:.25s;
+                box-shadow:0 10px 25px rgba(15,118,110,.35);
+            "
+            onmouseover="
+                this.style.transform='translateY(-3px)';
+                this.style.boxShadow='0 16px 35px rgba(15,118,110,.45)';
+            "
+            onmouseout="
+                this.style.transform='translateY(0)';
+                this.style.boxShadow='0 10px 25px rgba(15,118,110,.35)';
+            ">
+                Ir para a Aula 01 →
+            </button>
+
+        </a>
+
+    </div>
+
+</section>
+</body>
+</html>
